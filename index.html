@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Application 6 | Real-Time Pressure Sensor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero" id="top">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="#top">
+          <span class="brand-mark">RT</span>
+          <span>App 6</span>
+        </a>
+        <div class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#demo">Demo</a>
+          <a href="#design">RTOS Design</a>
+          <a href="#links">Links</a>
+        </div>
+      </nav>
+
+      <section class="hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Real-Time Systems · Spring 2026</p>
+          <h1>Real-Time Pressure Sensor Alert System</h1>
+          <p class="hero-text">
+            An ESP32 FreeRTOS prototype that monitors cabin-style pressure data and triggers a warning LED within a hard real-time response window.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button primary" href="#demo">Watch Demo</a>
+            <a class="button secondary" href="https://wokwi.com/projects/462032087119972353" target="_blank" rel="noopener">Open Wokwi</a>
+          </div>
+
+          <div class="metric-row" aria-label="Project metrics">
+            <div>
+              <strong>20 ms</strong>
+              <span>Hard deadline</span>
+            </div>
+            <div>
+              <strong>~10 ms</strong>
+              <span>Measured response</span>
+            </div>
+            <div>
+              <strong>6</strong>
+              <span>Tasks / ISR paths</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="device-card" aria-label="System architecture illustration">
+          <div class="card-header">
+            <span class="status-dot"></span>
+            <span>Live Prototype Model</span>
+          </div>
+
+          <div class="board-visual">
+            <div class="chip">
+              <span>ESP32</span>
+              <small>FreeRTOS Scheduler</small>
+            </div>
+            <div class="wire wire-one"></div>
+            <div class="wire wire-two"></div>
+            <div class="module sensor">BMP180<br><span>Pressure</span></div>
+            <div class="module led red">Alert LED</div>
+            <div class="module led green">Heartbeat</div>
+            <div class="module button-node">Button ISR</div>
+          </div>
+
+          <div class="terminal">
+            <p><span>&gt;</span> pressure read: 840 hPa</p>
+            <p><span>&gt;</span> threshold crossed</p>
+            <p><span>&gt;</span> LED response: deadline met</p>
+          </div>
+        </aside>
+      </section>
+    </header>
+
+    <main>
+      <section id="overview" class="section two-column">
+        <div>
+          <p class="section-label">Project Overview</p>
+          <h2>Pressure monitoring for safety-critical aerospace conditions.</h2>
+          <p>
+            This project models a real-time pressure monitoring system for an aerospace or pilot-support environment. The ESP32 reads pressure from a BMP180 sensor, checks whether the pressure has dropped below a critical threshold, and turns on a red alert LED when the condition becomes unsafe.
+          </p>
+          <p>
+            The key requirement is timing: the pressure detection to alert LED path must finish within a <strong>20 ms hard deadline</strong>. The system uses FreeRTOS tasks, an interrupt, a queue, and a semaphore to keep deadline-critical behavior predictable.
+          </p>
+        </div>
+
+        <div class="glass-card stats-card">
+          <h3>System Snapshot</h3>
+          <ul class="clean-list">
+            <li><span>Controller</span><strong>ESP32</strong></li>
+            <li><span>Sensor</span><strong>BMP180</strong></li>
+            <li><span>RTOS</span><strong>FreeRTOS</strong></li>
+            <li><span>Critical path</span><strong>Pressure → LED</strong></li>
+            <li><span>External link</span><strong>Wi-Fi Web UI</strong></li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="demo" class="section demo-layout">
+        <div class="demo-copy">
+          <p class="section-label">90-Second Demo</p>
+          <h2>Wokwi prototype demonstration.</h2>
+          <p>
+            Upload your 90-second screen recording to YouTube, then replace the iframe source with your video embed URL.
+          </p>
+          <div class="callout">
+            <strong>Embed placeholder:</strong>
+            <code>https://www.youtube.com/embed/gQtbCTr033g?si=Hl6fW38PrIA85Cfn</code>
+          </div>
+        </div>
+
+        <div class="video-frame">
+          <!-- Replace VIDEO_ID_HERE with your YouTube video ID. Example: https://www.youtube.com/embed/abc123XYZ -->
+          <iframe
+            src="https://www.youtube.com/embed/gQtbCTr033g?si=Hl6fW38PrIA85Cfn"
+            title="Application 6 Real-Time Pressure Sensor Demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </section>
+
+      <section id="design" class="section">
+        <div class="section-heading">
+          <p class="section-label">RTOS Design</p>
+          <h2>Task and deadline summary.</h2>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Task / ISR</th>
+                <th>Priority</th>
+                <th>Timing</th>
+                <th>Role</th>
+                <th>Criticality</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>buttonISR</code></td>
+                <td>Interrupt</td>
+                <td>Aperiodic</td>
+                <td>Detects physical button press</td>
+                <td><span class="pill soft">Soft</span></td>
+              </tr>
+              <tr>
+                <td><code>heartbeat_task</code></td>
+                <td>1</td>
+                <td>1000 ms on / 1000 ms off</td>
+                <td>Shows system alive with green LED</td>
+                <td><span class="pill soft">Soft</span></td>
+              </tr>
+              <tr>
+                <td><code>bmp_reading</code></td>
+                <td>2</td>
+                <td>5 ms period</td>
+                <td>Reads pressure and detects unsafe condition</td>
+                <td><span class="pill hard">Hard</span></td>
+              </tr>
+              <tr>
+                <td><code>sensor_logger_task</code></td>
+                <td>1</td>
+                <td>Queue-driven</td>
+                <td>Stores latest sensor value for display</td>
+                <td><span class="pill soft">Soft</span></td>
+              </tr>
+              <tr>
+                <td><code>event_handler_task</code></td>
+                <td>2</td>
+                <td>~10 ms loop</td>
+                <td>Handles pressure alerts and LED response</td>
+                <td><span class="pill hard">Hard</span></td>
+              </tr>
+              <tr>
+                <td><code>web_server_task</code></td>
+                <td>3</td>
+                <td>~2 ms loop</td>
+                <td>Handles web control requests</td>
+                <td><span class="pill soft">Soft</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section card-grid">
+        <article class="glass-card feature-card">
+          <span class="feature-icon">01</span>
+          <h3>Synchronization</h3>
+          <p>
+            The sensor task sends pressure readings through a queue, button/web actions signal through a binary semaphore, and shared output is protected to avoid unsafe concurrent access.
+          </p>
+        </article>
+
+        <article class="glass-card feature-card">
+          <span class="feature-icon">02</span>
+          <h3>Determinism Proof</h3>
+          <p>
+            The Wokwi logic analyzer was used to measure the path from pressure threshold detection to the alert LED response. Normal testing showed approximately 10 ms response time.
+          </p>
+        </article>
+
+        <article class="glass-card feature-card">
+          <span class="feature-icon">03</span>
+          <h3>Design Tradeoff</h3>
+          <p>
+            Non-critical display and logging behavior is separated from the hard pressure alert path so visual safety feedback remains responsive under load.
+          </p>
+        </article>
+      </section>
+
+      <section id="links" class="section links-section">
+        <p class="section-label">Project Links</p>
+        <h2>Resources.</h2>
+        <div class="link-grid">
+          <a class="resource-card" href="https://wokwi.com/projects/462032087119972353" target="_blank" rel="noopener">
+            <span>Simulation</span>
+            <strong>Wokwi Project</strong>
+          </a>
+          <a class="resource-card" href="https://github.com/YOUR_USERNAME/YOUR_REPOSITORY" target="_blank" rel="noopener">
+            <span>Source Code</span>
+            <strong>GitHub Repository</strong>
+          </a>
+          <a class="resource-card" href="https://www.youtube.com/watch?v=gQtbCTr033g" target="_blank" rel="noopener">
+            <span>Video</span>
+            <strong>YouTube Demo</strong>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>Created by Luke Anderson · Real Time Systems · Spring 2026</p>
+      <br>
+      <p>AI Usage: <a href="https://chatgpt.com/share/69ed632a-9b54-83ea-bb29-83d20a668634"> Click Here</a></p>
+    </footer>
+  </div>
+</body>
+</html>
